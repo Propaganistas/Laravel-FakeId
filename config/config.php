@@ -31,8 +31,8 @@ return [
 	| In that case, note that you need to decode incoming FakeIDs yourself using:
 	|
 	|   Route::bind('mymodel', function($value, $route) {
-    |      return app('fakeid')->decode($value);
-    |   });
+    	|      return app('fakeid')->decode($value);
+    	|   });
 	|
 	*/
 
