@@ -48,9 +48,11 @@ class FakeIdServiceProvider extends ServiceProvider {
         });
 
         // Register customized router.
-        $this->app['router'] = $this->app->share(function ($app) {
-            return new Router($app['events'], $app);
-        });
+	    if (config('fakeid.enable_router')) {
+		    $this->app['router'] = $this->app->share(function ($app) {
+			    return new Router($app['events'], $app);
+		    });
+	    }
     }
 
     /**
