@@ -10,3 +10,4 @@ composer.lock
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
 .idea/workspace.xml
+.idea/Laravel-FakeId.iml
