@@ -10,8 +10,3 @@ filter:
         - 'vendor/*'
 checks:
   php: true
-tools:
-  external_code_coverage:
-    timeout: 1200
-    runs: 3
-  php_code_coverage: false
