@@ -3,9 +3,8 @@
 namespace Propaganistas\LaravelFakeId\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Jenssegers\Optimus\Optimus;
-use phpseclib\Crypt\Random;
-use phpseclib\Math\BigInteger;
 
 class FakeIdSetupCommand extends Command
 {
@@ -40,7 +39,7 @@ class FakeIdSetupCommand extends Command
         }
 
         // Calculate a random number.
-        $rand = hexdec(bin2hex(Random::string(4))) & Optimus::MAX_INT;
+        $rand = hexdec(bin2hex(Str::random(4))) & Optimus::MAX_INT;
 
         // Write in environment file.
         $path = base_path('.env');
