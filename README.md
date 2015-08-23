@@ -34,6 +34,12 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
     ],
     ```
 
+4. Run the following artisan command to auto-initialize the package's settings
+    
+    ```bash
+    $ php artisan fakeid:setup
+    ```
+
 ### Usage
 
 First of all, make sure the model is bound to Laravel's Router, e.g. by inserting this on top of the `routes.php` file:
