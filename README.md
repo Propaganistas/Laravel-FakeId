@@ -19,7 +19,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 2. Run the Composer update command
 
     ```bash
-    $ composer update
+    composer update
     ```
 
 3. In your app config, add the Service Provider to the end of the `$providers` array
@@ -37,7 +37,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 4. Run the following artisan command to auto-initialize the package's settings
     
     ```bash
-    $ php artisan fakeid:setup
+    php artisan fakeid:setup
     ```
 
 ### Usage
