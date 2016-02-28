@@ -5,16 +5,18 @@ namespace Propaganistas\LaravelFakeId\Illuminate;
 use Closure;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Routing\Router as IlluminateRouter;
+use Illuminate\Support\Facades\App;
 use Propaganistas\LaravelFakeId\FakeIdTrait;
 
 class Router extends IlluminateRouter
 {
+
     /**
      * Register a model binder for a wildcard.
      *
-     * @param  string  $key
-     * @param  string  $class
-     * @param  \Closure|null  $callback
+     * @param  string        $key
+     * @param  string        $class
+     * @param  \Closure|null $callback
      * @return void
      *
      * @throws NotFoundHttpException
@@ -29,11 +31,11 @@ class Router extends IlluminateRouter
             // For model binders, we will attempt to retrieve the models using the first
             // method on the model instance. If we cannot retrieve the models we'll
             // throw a not found exception otherwise we will return the instance.
-            $instance = new $class;
+            $instance = $this->container->make($class);
 
             // Decode FakeId first if applicable.
             if (in_array(FakeIdTrait::class, class_uses($class))) {
-            	$value = app('fakeid')->decode($value);
+                $value = App::make('fakeid')->decode($value);
             }
 
             if ($model = $instance->where($instance->getRouteKeyName(), $value)->first()) {

@@ -4,7 +4,8 @@ use Illuminate\Support\ServiceProvider;
 use Jenssegers\Optimus\Optimus;
 use Propaganistas\LaravelFakeId\Illuminate\Router;
 
-class FakeIdServiceProvider extends ServiceProvider {
+class FakeIdServiceProvider extends ServiceProvider
+{
 
     /**
      * Indicates if loading of the provider is deferred.
@@ -37,22 +38,26 @@ class FakeIdServiceProvider extends ServiceProvider {
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'fakeid');
 
         // Register setup command.
-        $this->app['command.fakeid.setup'] = $this->app->share(function ($app) {
-              return new Commands\FakeIdSetupCommand();
+        $this->app->singleton('fakeid.command.setup', function ($app) {
+            return new Commands\FakeIdSetupCommand();
         });
-        $this->commands('command.fakeid.setup');
+        $this->commands('fakeid.command.setup');
 
         // Register FakeId driver.
-        $this->app->singleton('fakeid', function($app) {
-            return new Optimus(config('fakeid.prime'), config('fakeid.inverse'), config('fakeid.random'));
+        $this->app->singleton('fakeid', function ($app) {
+            return new Optimus(
+                $app['config']['fakeid.prime'],
+                $app['config']['fakeid.inverse'],
+                $app['config']['fakeid.random']
+            );
         });
 
         // Register customized router.
-	if (config('fakeid.enable_router')) {
-	    $this->app['router'] = $this->app->share(function ($app) {
-		    return new Router($app['events'], $app);
-	    });
-    	}
+        if ($this->app['config']['fakeid.enable_router']) {
+            $this->app->extend('router', function ($original, $app) {
+                return new Router($app['events'], $app);
+            });
+        }
     }
 
     /**
@@ -62,7 +67,10 @@ class FakeIdServiceProvider extends ServiceProvider {
      */
     public function provides()
     {
-        return ['fakeid', 'command.fakeid.setup'];
+        return [
+            'fakeid',
+            'fakeid.command.setup'
+        ];
     }
 
 }

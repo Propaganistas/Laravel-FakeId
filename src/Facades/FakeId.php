@@ -2,8 +2,19 @@
 
 use Illuminate\Support\Facades\Facade;
 
-class FakeId extends Facade {
+class FakeId extends Facade
+{
 
-	protected static function getFacadeAccessor() { return 'fakeid'; }
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     *
+     * @throws \RuntimeException
+     */
+    protected static function getFacadeAccessor()
+    {
+        return 'fakeid';
+    }
 
 }

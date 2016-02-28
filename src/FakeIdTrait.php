@@ -1,15 +1,18 @@
 <?php namespace Propaganistas\LaravelFakeId;
 
-trait FakeIdTrait {
+use Illuminate\Support\Facades\App;
 
-	/**
-	 * Get the value of the model's route key.
-	 *
-	 * @return mixed
-	 */
-	public function getRouteKey()
-	{
-	    return app('fakeid')->encode($this->getKey());
+trait FakeIdTrait
+{
+
+    /**
+     * Get the value of the model's route key.
+     *
+     * @return mixed
+     */
+    public function getRouteKey()
+    {
+        return App::make('fakeid')->encode($this->getKey());
 	}
 
 }
