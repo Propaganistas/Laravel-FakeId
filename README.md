@@ -54,7 +54,7 @@ Next, simply import `Propaganistas\LaravelFakeId\FakeIdTrait` into your model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use Propaganistas\LaravalFakeId\FakeIdTrait;
+use Propaganistas\LaravelFakeId\FakeIdTrait;
 
 class MyModel extends Model {
 
