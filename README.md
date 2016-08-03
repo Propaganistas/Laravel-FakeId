@@ -1,6 +1,5 @@
 # Laravel FakeID
 
-[![Build Status](https://travis-ci.org/Propaganistas/Laravel-FakeId.svg?branch=master)](https://travis-ci.org/Propaganistas/Laravel-FakeId)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Propaganistas/Laravel-FakeId/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Propaganistas/Laravel-FakeId/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/propaganistas/laravel-fakeid/v/stable)](https://packagist.org/packages/propaganistas/laravel-fakeid)
 [![Total Downloads](https://poser.pugx.org/propaganistas/laravel-fakeid/downloads)](https://packagist.org/packages/propaganistas/laravel-fakeid)
@@ -10,13 +9,19 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Installation
 
-1. Run the Composer command to install the package
+1. In the `require` key of `composer.json` file add the following
 
-    ```bash
-    composer require propaganistas/laravel-fakeid
+    ```json
+    "propaganistas/laravel-fakeid": "~1.0"
     ```
 
-2. In your app config, add the Service Provider to the end of the `$providers` array
+2. Run the Composer update command
+
+    ```bash
+    composer update
+    ```
+
+3. In your app config, add the Service Provider to the end of the `$providers` array
 
    **Laravel 5**
      ```php
@@ -28,7 +33,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
     ],
     ```
 
-3. Run the following artisan command to auto-initialize the package's settings
+4. Run the following artisan command to auto-initialize the package's settings
     
     ```bash
     php artisan fakeid:setup
@@ -36,10 +41,10 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Usage
 
-First of all, make sure the model is bound to Laravel's Router, e.g. by inserting this on top of the `routes.php` file:
+First of all, make sure the model is bound to Laravel's Router using the `fakeIdModel()` method (e.g. on top of the `routes.php` file):
 
 ```php
-Route::model('mymodel', 'App\MyModel');
+Route::fakeIdModel('mymodel', 'App\MyModel');
 ```
 
 This way you can reference a placeholder in your routes (`edit/{mymodel}`)
@@ -48,7 +53,7 @@ Next, simply import `Propaganistas\LaravelFakeId\FakeIdTrait` into your model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use Propaganistas\LaravelFakeId\FakeIdTrait;
+use Propaganistas\LaravalFakeId\FakeIdTrait;
 
 class MyModel extends Model {
 
@@ -57,11 +62,7 @@ class MyModel extends Model {
 }
 ```
 
-All routes generated for this model will now automatically contain obfuscated IDs and incoming requests to `{mymodel}` routes will be handled correctly.
-
-### Notice
-
-This package features a slightly modified version of Laravel's built-in `Illuminate\Routing\Router` class and injects it into the IoC container. If you are using a custom `Router` of your own, you can publish the config file to disable FakeId's `Router`. Please note that in this case you need to decode incoming requests containing obfuscated IDs yourself.
+All routes generated for this model will now automatically contain obfuscated IDs and incoming requests to `{mymodel}` routes containing obfuscated IDs will be handled correctly.
 
 ### FAQ
 

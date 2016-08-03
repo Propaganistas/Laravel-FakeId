@@ -25,5 +25,10 @@
       "Propaganistas\\LaravelFakeId\\": "src/"
     }
   },
+  "scripts": {
+    "post-update-cmd": [
+      "php artisan clear-compiled"
+    ]
+  },
   "prefer-stable": true
 }
