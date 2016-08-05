@@ -9,19 +9,13 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Installation
 
-1. In the `require` key of `composer.json` file add the following
-
-    ```json
-    "propaganistas/laravel-fakeid": "~1.0"
-    ```
-
-2. Run the Composer update command
+1. Run the Composer require command to install the package
 
     ```bash
-    composer update
+    composer require propaganistas/laravel-fakeid
     ```
 
-3. In your app config, add the Service Provider to the end of the `$providers` array
+2. In your app config, add the Service Provider to the end of the `$providers` array
 
    **Laravel 5**
      ```php
@@ -33,7 +27,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
     ],
     ```
 
-4. Run the following artisan command to auto-initialize the package's settings
+3. Run the following artisan command to auto-initialize the package's settings
     
     ```bash
     php artisan fakeid:setup
