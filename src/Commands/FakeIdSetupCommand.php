@@ -3,8 +3,7 @@
 namespace Propaganistas\LaravelFakeId\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
-use Jenssegers\Optimus\Optimus;
+use Jenssegers\Optimus\Energon;
 
 class FakeIdSetupCommand extends Command
 {
@@ -29,17 +28,7 @@ class FakeIdSetupCommand extends Command
      */
     public function fire()
     {
-        // Get a pseudo-random prime.
-        $prime = gmp_intval(gmp_nextprime(mt_rand(1e7, Optimus::MAX_INT)));
-
-        // Calculate the inverse.
-        if (!$inverse = gmp_intval(gmp_invert($prime, (Optimus::MAX_INT + 1)))) {
-            $this->error("Error during calculation of FakeId settings. Please re-run this command (php artisan fakeid:setup).");
-            return;
-        }
-
-        // Calculate a random number.
-        $rand = hexdec(bin2hex(Str::random(4))) & Optimus::MAX_INT;
+        list($prime, $inverse, $rand) = Energon::generate();
 
         // Write in environment file.
         $path = base_path('.env');
