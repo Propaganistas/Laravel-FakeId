@@ -45,13 +45,14 @@ class FakeIdServiceProvider extends ServiceProvider
 		$this->commands('fakeid.command.setup');
 
 		// Register FakeId driver.
-		$this->app->singleton('fakeid', function($app) {
+		$this->app->singleton(Optimus::class, function($app) {
 			return new Optimus(
 				$app['config']['fakeid.prime'],
 				$app['config']['fakeid.inverse'],
 				$app['config']['fakeid.random']
 			);
 		});
+        $this->app->alias(Optimus::class, 'fakeid');
 
 		$this->registerRouterMacro();
 
