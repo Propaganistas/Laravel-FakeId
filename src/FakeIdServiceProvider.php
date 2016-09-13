@@ -54,6 +54,10 @@ class FakeIdServiceProvider extends ServiceProvider
 		});
         $this->app->alias(Optimus::class, 'fakeid');
 
+		$this->app->bind(Optimus::class, function ($app) {
+			return $app['fakeid'];
+		});
+
 		$this->registerRouterMacro();
 
 	}
