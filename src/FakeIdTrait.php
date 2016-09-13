@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\App;
 
 trait FakeIdTrait
 {
-
     /**
      * Get the value of the model's route key.
      *
@@ -13,6 +12,5 @@ trait FakeIdTrait
     public function getRouteKey()
     {
         return App::make('fakeid')->encode($this->getKey());
-	}
-
+    }
 }

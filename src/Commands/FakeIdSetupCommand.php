@@ -35,6 +35,7 @@ class FakeIdSetupCommand extends Command
         // Calculate the inverse.
         if (!$inverse = gmp_intval(gmp_invert($prime, (Optimus::MAX_INT + 1)))) {
             $this->error("Error during calculation of FakeId settings. Please re-run this command (php artisan fakeid:setup).");
+
             return;
         }
 
@@ -44,14 +45,15 @@ class FakeIdSetupCommand extends Command
         // Write in environment file.
         $path = base_path('.env');
 
-	    if (!file_exists($path)) {
-		    $this->error("Environment file (.env) not found. Aborting FakeId setup!");
-		    return;
-	    }
+        if (!file_exists($path)) {
+            $this->error("Environment file (.env) not found. Aborting FakeId setup!");
+
+            return;
+        }
 
         // Remove existing configuration.
         $fileArray = file($path);
-        foreach($fileArray as $k => $line) {
+        foreach ($fileArray as $k => $line) {
             if (strpos($line, 'FAKEID_') === 0) {
                 unset($fileArray[$k]);
             }
