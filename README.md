@@ -35,7 +35,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Usage
 
-First of all, make sure the model is bound to Laravel's Router using the `fakeIdModel()` method (e.g. on top of the `routes.php` file):
+First of all, make sure the model is bound to Laravel's Router using the `fakeIdModel()` method, e.g. on top of the `routes.php` file (or in the `boot()` method of `RouteServiceProvider` if you use route caching):
 
 ```php
 Route::fakeIdModel('mymodel', 'App\MyModel');
