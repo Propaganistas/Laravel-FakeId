@@ -37,14 +37,14 @@ class FakeIdServiceProvider extends ServiceProvider
         $this->commands('fakeid.command.setup');
 
         // Register FakeId driver.
-        $this->app->singleton(Optimus::class, function ($app) {
+        $this->app->singleton('Jenssegers\Optimus\Optimus', function ($app) {
             return new Optimus(
                 $app['config']['fakeid.prime'],
                 $app['config']['fakeid.inverse'],
                 $app['config']['fakeid.random']
             );
         });
-        $this->app->alias(Optimus::class, 'fakeid');
+        $this->app->alias('Jenssegers\Optimus\Optimus', 'fakeid');
 
         $this->registerRouterMacro();
 
@@ -67,7 +67,7 @@ class FakeIdServiceProvider extends ServiceProvider
                 $instance = $this->container->make($class);
 
                 // Decode FakeId first if applicable.
-                if (in_array(FakeIdTrait::class, class_uses($class))) {
+                if (in_array('Propaganistas\LaravelFakeId\FakeIdTrait', class_uses($class))) {
                     $value = $this->container->make('fakeid')->decode($value);
                 }
 
