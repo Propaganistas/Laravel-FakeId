@@ -20,9 +20,18 @@
         "jenssegers/optimus": "^0.2",
         "laravel/framework": "^5.0"
     },
+    "require-dev": {
+        "orchestra/testbench": "^3.0",
+        "phpunit/phpunit": "^4.0|^5.0"
+    },
     "autoload": {
         "psr-4": {
             "Propaganistas\\LaravelFakeId\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Propaganistas\\LaravelFakeId\\Tests\\": "tests/"
         }
     }
 }

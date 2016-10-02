@@ -18,7 +18,7 @@
         <whitelist addUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src</directory>
             <exclude>
-                <file>./src/FakeIdServiceProvider.php</file>
+                <file>./src/Commands/FakeIdSetupCommand.php</file>
             </exclude>
         </whitelist>
     </filter>
