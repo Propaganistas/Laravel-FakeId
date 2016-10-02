@@ -8,5 +8,6 @@ filter:
         - 'stub/*'
         - 'coverage/*'
         - 'vendor/*'
+
 checks:
   php: true

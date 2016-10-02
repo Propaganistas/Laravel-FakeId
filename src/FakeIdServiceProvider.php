@@ -7,14 +7,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FakeIdServiceProvider extends ServiceProvider
 {
-
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
     /**
      * Boots the service provider.
      *
@@ -25,7 +17,7 @@ class FakeIdServiceProvider extends ServiceProvider
         // Publish config.
         $this->publishes([
             __DIR__ . '/../config/config.php' => config_path('fakeid.php'),
-        ]);
+        ], 'config');
     }
 
     /**
@@ -56,19 +48,6 @@ class FakeIdServiceProvider extends ServiceProvider
 
         $this->registerRouterMacro();
 
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [
-            'fakeid',
-            'fakeid.command.setup'
-        ];
     }
 
     /**
