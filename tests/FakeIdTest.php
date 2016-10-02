@@ -3,7 +3,6 @@
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
-use Jenssegers\Optimus\Optimus;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\FakeIdTrait;
@@ -23,8 +22,8 @@ class FakeIdTest extends TestCase
 
         $this->configureDatabase();
 
-        Route::model('real', Real::class);
-        Route::fakeIdModel('fake', Fake::class);
+        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Real');
+        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Fake');
 
         Route::get('real/{real}', ['as' => 'real', function ($real) {
             return 'real';
@@ -61,7 +60,7 @@ class FakeIdTest extends TestCase
 
     public function testFacade()
     {
-        $this->assertInstanceOf(Optimus::class, FakeId::getFacadeRoot());
+        $this->assertInstanceOf('Jenssegers\Optimus\Optimus', FakeId::getFacadeRoot());
     }
 
     public function testDefaultModelBindingStillWorks()
