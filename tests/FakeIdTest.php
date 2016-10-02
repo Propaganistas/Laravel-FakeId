@@ -65,7 +65,7 @@ class FakeIdTest extends TestCase
 
     public function testDefaultModelBindingStillWorks()
     {
-        $model = Real::create();
+        $model = Real::create([]);
 
         $expected = url('real/' . $model->getRouteKey());
         $actual = route('real', ['real' => $model]);
@@ -75,7 +75,7 @@ class FakeIdTest extends TestCase
 
     public function testFakeIdTraitEnforcesEncodedRouteKey()
     {
-        $model = Fake::create();
+        $model = Fake::create([]);
 
         $this->assertNotEquals($model->getRouteKey(), $model->getKey());
         $this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
@@ -83,7 +83,7 @@ class FakeIdTest extends TestCase
 
     public function testFakeIdModelBindingWorks()
     {
-        $model = Fake::create();
+        $model = Fake::create([]);
 
         $expected = url('fake/' . $model->getRouteKey());
         $actual = route('fake', ['fake' => $model]);
