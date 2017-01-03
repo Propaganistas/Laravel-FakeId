@@ -28,30 +28,37 @@ class FakeIdSetupCommand extends Command
      */
     public function fire()
     {
-        list($prime, $inverse, $rand) = Energon::generate();
-
         // Write in environment file.
         $path = base_path('.env');
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             $this->error("Environment file (.env) not found. Aborting FakeId setup!");
 
             return;
         }
 
-        // Remove existing configuration.
-        $fileArray = file($path);
-        foreach ($fileArray as $k => $line) {
-            if (strpos($line, 'FAKEID_') === 0) {
-                unset($fileArray[$k]);
+        $env = file($path);
+
+        // Detect existing configuration.
+        if (str_contains(implode(' ', $env), 'FAKEID_')) {
+            if (! $this->confirm("Overwrite existing configuration?")) {
+                return;
+            }
+
+            foreach ($env as $k => $line) {
+                if (strpos($line, 'FAKEID_') === 0) {
+                    unset($env[$k]);
+                }
             }
         }
 
+        list($prime, $inverse, $rand) = Energon::generate();
+
         // Append new configuration.
-        $fileArray[] = "\nFAKEID_PRIME=" . $prime;
-        $fileArray[] = "\nFAKEID_INVERSE=" . $inverse;
-        $fileArray[] = "\nFAKEID_RANDOM=" . $rand;
-        file_put_contents($path, implode('', $fileArray), LOCK_EX);
+        $env[] = "\nFAKEID_PRIME=" . $prime;
+        $env[] = "\nFAKEID_INVERSE=" . $inverse;
+        $env[] = "\nFAKEID_RANDOM=" . $rand;
+        file_put_contents($path, implode('', $env), LOCK_EX);
 
         $this->info("FakeId configured correctly.");
     }
