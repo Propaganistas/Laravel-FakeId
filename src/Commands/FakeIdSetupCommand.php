@@ -8,11 +8,13 @@ use Jenssegers\Optimus\Energon;
 class FakeIdSetupCommand extends Command
 {
     /**
-     * The console command name.
+     * The name and signature of the console command.
      *
      * @var string
      */
-    protected $name = 'fakeid:setup';
+    protected $signature = 'fakeid:setup
+                            {--o|overwrite : Silently overwrite existing configuration}
+                            {--p|preserve : Silently preserves existing configuration}';
 
     /**
      * The console command description.
@@ -30,36 +32,64 @@ class FakeIdSetupCommand extends Command
     {
         // Write in environment file.
         $path = base_path('.env');
-
-        if (! file_exists($path)) {
-            $this->error("Environment file (.env) not found. Aborting FakeId setup!");
-
-            return;
-        }
-
         $env = file($path);
 
         // Detect existing configuration.
-        if (str_contains(implode(' ', $env), 'FAKEID_')) {
-            if (! $this->confirm("Overwrite existing configuration?")) {
+        if ($this->hasExistingConfiguration($env)) {
+
+            if ($this->option('preserve')) {
                 return;
             }
 
-            foreach ($env as $k => $line) {
-                if (strpos($line, 'FAKEID_') === 0) {
-                    unset($env[$k]);
+            if (! $this->option('overwrite')) {
+                if (! $this->confirm("Overwrite existing configuration?")) {
+                    return;
                 }
             }
+
+            $this->removeExistingConfiguration($env);
         }
 
+        $this->writeNewConfiguration($env, $path);
+        $this->info("FakeId configured correctly.");
+    }
+
+    /**
+     * Checks if the given file array contains existing FakeId configuration.
+     */
+    protected function hasExistingConfiguration($file)
+    {
+        return str_contains(implode(' ', $file), 'FAKEID_');
+    }
+
+    /**
+     * Removes existing FakeId configuration from the given file array.
+     *
+     * @param array $file
+     */
+    protected function removeExistingConfiguration(&$file)
+    {
+        foreach ($file as $k => $line) {
+            if (strpos($line, 'FAKEID_') === 0) {
+                unset($file[$k]);
+            }
+        }
+    }
+
+    /**
+     * Writes new configuration using the provided file array to the given path.
+     *
+     * @param array $file
+     * @param string $path
+     */
+    protected function writeNewConfiguration($file, $path)
+    {
         list($prime, $inverse, $rand) = Energon::generate();
 
-        // Append new configuration.
-        $env[] = "\nFAKEID_PRIME=" . $prime;
-        $env[] = "\nFAKEID_INVERSE=" . $inverse;
-        $env[] = "\nFAKEID_RANDOM=" . $rand;
-        file_put_contents($path, implode('', $env), LOCK_EX);
+        $file[] = "\nFAKEID_PRIME=" . $prime;
+        $file[] = "\nFAKEID_INVERSE=" . $inverse;
+        $file[] = "\nFAKEID_RANDOM=" . $rand;
 
-        $this->info("FakeId configured correctly.");
+        file_put_contents($path, implode('', $file), LOCK_EX);
     }
 }
