@@ -67,7 +67,7 @@ class FakeIdServiceProvider extends ServiceProvider
                 $instance = $this->container->make($class);
 
                 // Decode FakeId first if applicable.
-                if (in_array('Propaganistas\LaravelFakeId\FakeIdTrait', class_uses($class))) {
+                if (in_array('Propaganistas\LaravelFakeId\FakeIdTrait', class_uses_recursive($class))) {
                     $value = $this->container->make('fakeid')->decode($value);
                 }
 
