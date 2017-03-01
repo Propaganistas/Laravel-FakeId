@@ -44,10 +44,11 @@ class FakeIdServiceProvider extends ServiceProvider
                 $app['config']['fakeid.random']
             );
         });
+
+        $this->app->alias('Jenssegers\Optimus\Optimus', 'optimus');
         $this->app->alias('Jenssegers\Optimus\Optimus', 'fakeid');
 
         $this->registerRouterMacro();
-
     }
 
     /**
