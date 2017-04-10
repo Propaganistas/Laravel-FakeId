@@ -69,7 +69,11 @@ class FakeIdServiceProvider extends ServiceProvider
 
                 // Decode FakeId first if applicable.
                 if (in_array('Propaganistas\LaravelFakeId\FakeIdTrait', class_uses_recursive($class))) {
-                    $value = $this->container->make('fakeid')->decode($value);
+                    try {
+                        $value = $this->container->make('fakeid')->decode($value);
+                    } catch (\InvalidArgumentException $e) {
+                        throw config('app.debug') ? new  \InvalidArgumentException($e->getMessage()) : new NotFoundHttpException;
+                    }
                 }
 
                 if ($model = $instance->where($instance->getRouteKeyName(), $value)->first()) {
