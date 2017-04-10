@@ -1,7 +1,6 @@
 <?php namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Routing\Middleware\SubstituteBindings;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
@@ -22,16 +21,16 @@ class FakeIdTest extends TestCase
 
         $this->route = $this->app['router'];
 
-        $this->route->model('real', Real::class);
-        $this->route->fakeIdModel('fake', Fake::class);
+        $this->route->model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
+        $this->route->fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
 
         $this->route->get('real/{real}', ['as' => 'real', function ($real) {
             return $real->id;
-        }])->middleware(SubstituteBindings::class);
+        }])->middleware('Illuminate\Routing\Middleware\SubstituteBindings');
 
         $this->route->get('fake/{fake}', ['as' => 'fake', function ($fake) {
             return $fake->id;
-        }])->middleware(SubstituteBindings::class);
+        }])->middleware('Illuminate\Routing\Middleware\SubstituteBindings');
 
     }
 
