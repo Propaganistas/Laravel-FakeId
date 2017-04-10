@@ -1,37 +1,38 @@
 <?php namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
-use Propaganistas\LaravelFakeId\FakeIdTrait;
+use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
+use Propaganistas\LaravelFakeId\Tests\Entities\Real;
 
 class FakeIdTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [
-            'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
-        ];
-    }
+    protected $route;
 
+    /**
+     *
+     */
     public function setUp()
     {
         parent::setUp();
 
         $this->configureDatabase();
 
-        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Real');
-        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Fake');
+        $this->route = $this->app['router'];
 
-        Route::get('real/{real}', ['as' => 'real', function ($real) {
-            return 'real';
-        }]);
+        $this->route->model('real', Real::class);
+        $this->route->fakeIdModel('fake', Fake::class);
 
-        Route::get('fake/{fake}', ['as' => 'fake', function ($fake) {
-            return 'fake';
-        }]);
+        $this->route->get('real/{real}', ['as' => 'real', function ($real) {
+            return $real->id;
+        }])->middleware(SubstituteBindings::class);
+
+        $this->route->get('fake/{fake}', ['as' => 'fake', function ($fake) {
+            return $fake->id;
+        }])->middleware(SubstituteBindings::class);
+
     }
 
     protected function configureDatabase()
@@ -90,13 +91,55 @@ class FakeIdTest extends TestCase
 
         $this->assertEquals($expected, $actual);
     }
-}
 
-class Real extends Model
-{
-}
+    public function testResponseNotFoundWhenDecodeFailAndDebugOff()
+    {
+        $this->app['config']->set('app.debug', false);
 
-class Fake extends Model
-{
-    use FakeIdTrait;
+        $this->get(route('fake', ['fake' => 'not-number']))
+            ->assertStatus(404);
+    }
+
+    public function testResponseErrorWhenDecodeFailDebugOn()
+    {
+        $this->app['config']->set('app.debug', true);
+
+        $this->get(route('fake', ['fake' => 'not-number']))
+            ->assertStatus(500);
+
+        $this->app['config']->set('app.debug', false);
+    }
+
+    public function testResponseFineWhenPassFakeModel()
+    {
+        $model = Fake::create([]);
+
+        $this->get(route('fake', ['fake' => $model]))
+            ->assertSee((string)$model->id)
+            ->assertStatus(200);
+    }
+
+    public function testResponseFineWhenPassNormalModel()
+    {
+        $model = Real::create([]);
+
+        $this->get(route('real', ['real' => $model]))
+            ->assertSee((string)$model->id)
+            ->assertStatus(200);
+    }
+
+    public function testResponseFailWhenPassModelId()
+    {
+        $model = Fake::create([]);
+
+        $this->get(route('fake', ['fake' => $model->id]))
+            ->assertStatus(404);
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
+        ];
+    }
 }

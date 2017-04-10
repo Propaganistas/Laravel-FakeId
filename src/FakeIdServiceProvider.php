@@ -72,7 +72,7 @@ class FakeIdServiceProvider extends ServiceProvider
                     try {
                         $value = $this->container->make('fakeid')->decode($value);
                     } catch (\InvalidArgumentException $e) {
-                        throw config('app.debug') ? new  \InvalidArgumentException($e->getMessage()) : new NotFoundHttpException;
+                        throw config('app.debug') ? $e : new NotFoundHttpException;
                     }
                 }
 
