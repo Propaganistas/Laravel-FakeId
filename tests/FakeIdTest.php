@@ -1,6 +1,7 @@
 <?php namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
@@ -8,8 +9,6 @@ use Propaganistas\LaravelFakeId\Tests\Entities\Real;
 
 class FakeIdTest extends TestCase
 {
-    protected $route;
-
     /**
      *
      */
@@ -19,19 +18,16 @@ class FakeIdTest extends TestCase
 
         $this->configureDatabase();
 
-        $this->route = $this->app['router'];
+        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
+        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
 
-        $this->route->model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
-        $this->route->fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
-
-        $this->route->get('real/{real}', ['as' => 'real', function ($real) {
+        Route::get('real/{real}', ['as' => 'real', function ($real) {
             return $real->id;
         }])->middleware('Illuminate\Routing\Middleware\SubstituteBindings');
 
-        $this->route->get('fake/{fake}', ['as' => 'fake', function ($fake) {
+        Route::get('fake/{fake}', ['as' => 'fake', function ($fake) {
             return $fake->id;
         }])->middleware('Illuminate\Routing\Middleware\SubstituteBindings');
-
     }
 
     protected function configureDatabase()
@@ -95,16 +91,16 @@ class FakeIdTest extends TestCase
     {
         $this->app['config']->set('app.debug', false);
 
-        $this->get(route('fake', ['fake' => 'not-number']))
-            ->assertStatus(404);
+        $response = $this->call('get', route('fake', ['fake' => 'not-number']));
+
+        $this->assertEquals(404, $response->status());
     }
 
     public function testResponseErrorWhenDecodeFailDebugOn()
     {
         $this->app['config']->set('app.debug', true);
 
-        $this->get(route('fake', ['fake' => 'not-number']))
-            ->assertStatus(500);
+        $this->call('get', route('fake', ['fake' => 'not-number']))->assertStatus(500);
 
         $this->app['config']->set('app.debug', false);
     }
@@ -113,26 +109,21 @@ class FakeIdTest extends TestCase
     {
         $model = Fake::create([]);
 
-        $this->get(route('fake', ['fake' => $model]))
-            ->assertSee((string)$model->id)
-            ->assertStatus(200);
+        $this->call('get', route('fake', ['fake' => $model]))->assertStatus(200)->assertSee((string)$model->id);
     }
 
     public function testResponseFineWhenPassNormalModel()
     {
         $model = Real::create([]);
 
-        $this->get(route('real', ['real' => $model]))
-            ->assertSee((string)$model->id)
-            ->assertStatus(200);
+        $this->call('get', route('real', ['real' => $model]))->assertStatus(200)->assertSee((string)$model->id);
     }
 
     public function testResponseFailWhenPassModelId()
     {
         $model = Fake::create([]);
 
-        $this->get(route('fake', ['fake' => $model->id]))
-            ->assertStatus(404);
+        $this->call('get', route('fake', ['fake' => $model->id]))->assertStatus(404);
     }
 
     protected function getPackageProviders($app)
