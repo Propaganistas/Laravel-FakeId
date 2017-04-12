@@ -1,37 +1,36 @@
 <?php namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
-use Propaganistas\LaravelFakeId\FakeIdTrait;
+use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
+use Propaganistas\LaravelFakeId\Tests\Entities\Real;
 
 class FakeIdTest extends TestCase
 {
-    protected function getPackageProviders($app)
-    {
-        return [
-            'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
-        ];
-    }
-
+    /**
+     *
+     */
     public function setUp()
     {
         parent::setUp();
 
         $this->configureDatabase();
 
-        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Real');
-        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Fake');
+        // add middleware for support version laravel >= 5.3
+        $middlewareBindings = version_compare($this->app->version(), '5.3.0') >= 0 ? 'Illuminate\Routing\Middleware\SubstituteBindings' : null;
+
+        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
+        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
 
         Route::get('real/{real}', ['as' => 'real', function ($real) {
-            return 'real';
-        }]);
+            return $real->id;
+        }, 'middleware'                 => $middlewareBindings]);
 
         Route::get('fake/{fake}', ['as' => 'fake', function ($fake) {
-            return 'fake';
-        }]);
+            return $fake->id;
+        }, 'middleware'                 => $middlewareBindings]);
     }
 
     protected function configureDatabase()
@@ -90,13 +89,83 @@ class FakeIdTest extends TestCase
 
         $this->assertEquals($expected, $actual);
     }
-}
 
-class Real extends Model
-{
-}
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function testResponseNotFoundWhenDecodeFailAndDebugOff()
+    {
+        $this->app['config']->set('app.debug', false);
 
-class Fake extends Model
-{
-    use FakeIdTrait;
+        $response = $this->call('get', route('fake', ['fake' => 'not-number']));
+
+        $this->throwErrorFromResponse($response);
+
+        //$this->assertEquals(404, $response->getStatusCode());
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testResponseErrorWhenDecodeFailDebugOn()
+    {
+        $this->app['config']->set('app.debug', true);
+
+        $response = $this->call('get', route('fake', ['fake' => 'not-number']));
+
+        $this->app['config']->set('app.debug', false);
+
+        $this->throwErrorFromResponse($response);
+
+        //$this->assertEquals(500, $response->getStatusCode());
+    }
+
+    public function testResponseFineWhenPassFakeModel()
+    {
+        $model = Fake::create([]);
+
+        $response = $this->call('get', route('fake', ['fake' => $model]));
+
+        $this->assertContains((string)$model->id, $response->getContent());
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testResponseFineWhenPassNormalModel()
+    {
+        $model = Real::create([]);
+
+        $response = $this->call('get', route('real', ['real' => $model]));
+
+        $this->assertContains((string)$model->id, $response->getContent());
+
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+     */
+    public function testResponseFailWhenPassModelId()
+    {
+        $model = Fake::create([]);
+
+        $response = $this->call('get', route('fake', ['fake' => $model->id]));
+
+        $this->throwErrorFromResponse($response);
+
+        //$this->assertEquals(404, $response->getStatusCode());
+    }
+
+    protected function throwErrorFromResponse($response)
+    {
+        if (isset($response->exception)) { // throw error manual if app use error handler of laravel to render error as html content
+            throw $response->exception;
+        }
+    }
+
+    protected function getPackageProviders($app)
+    {
+        return [
+            'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
+        ];
+    }
 }
