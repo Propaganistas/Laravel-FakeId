@@ -28,7 +28,7 @@ class FakeIdSetupCommand extends Command
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
         // Write in environment file.
         $path = base_path('.env');
