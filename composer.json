@@ -33,5 +33,15 @@
         "psr-4": {
             "Propaganistas\\LaravelFakeId\\Tests\\": "tests/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Propaganistas\\LaravelFakeId\\FakeIdServiceProvider"
+            ],
+            "aliases": {
+                "FakeId": "Propaganistas\\LaravelFakeId\\Facades\\FakeId"
+            }
+        }
     }
 }
