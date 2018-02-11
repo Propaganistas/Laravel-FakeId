@@ -16,7 +16,8 @@
         }
     ],
     "require": {
-        "laravel/framework": ">=5.0,<5.6",
+        "php": ">=5.5",
+        "laravel/framework": ">=5.0,<5.7",
         "jenssegers/optimus": "^0.2.2",
         "phpseclib/phpseclib": "^2.0"
     },

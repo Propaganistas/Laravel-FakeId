@@ -10,7 +10,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FakeIdTest extends TestCase
 {
-    protected function getPackageProviders($app)
+    /**
+     * @param \Illuminate\Foundation\Application $application
+     * @return array
+     */
+    protected function getPackageProviders($application)
     {
         return [
             'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
