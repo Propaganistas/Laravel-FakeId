@@ -17,12 +17,15 @@
     ],
     "require": {
         "php": ">=7.0",
-        "laravel/framework": ">=5.0,<5.7",
+        "illuminate/config": ">=5.5,<5.7",
+        "illuminate/container": ">=5.5,<5.7",
+        "illuminate/routing": ">=5.5,<5.7",
+        "illuminate/support": ">=5.5,<5.7",
         "jenssegers/optimus": "^0.2.2",
         "phpseclib/phpseclib": "^2.0"
     },
     "require-dev": {
-        "orchestra/testbench": "*",
+        "orchestra/testbench": "^3.5",
         "phpunit/phpunit": "*"
     },
     "autoload": {

@@ -2,9 +2,9 @@
 namespace Propaganistas\LaravelFakeId\Tests\Entities;
 
 use Illuminate\Database\Eloquent\Model;
-use Propaganistas\LaravelFakeId\FakeIdTrait;
+use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
 
 class Fake extends Model
 {
-    use FakeIdTrait;
+    use RoutesWithFakeIds;
 }

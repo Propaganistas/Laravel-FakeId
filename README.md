@@ -17,17 +17,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
     composer require propaganistas/laravel-fakeid
     ```
 
-2. In your app config, add the Service Provider to the end of the `$providers` array
-
-   **Laravel 5**
-     ```php
-    'providers' => [
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        ...
-        Propaganistas\LaravelFakeId\FakeIdServiceProvider::class,
-    ],
-    ```
+2. The package will automatically register itself.
 
 3. Run the following artisan command to auto-initialize the package's settings
     
@@ -37,23 +27,23 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Usage
 
-First of all, make sure the model is bound to Laravel's Router using the `fakeIdModel()` method, e.g. on top of the `routes.php` file (or in the `boot()` method of `RouteServiceProvider` if you use route caching):
+First of all, make sure the model is bound to Laravel's Router using the `model()` method, e.g. on top of the `routes.php` file (or in the `boot()` method of `RouteServiceProvider` if you use route caching):
 
 ```php
-Route::fakeIdModel('mymodel', 'App\MyModel');
+Route::model('mymodel', 'App\MyModel');
 ```
 
 This way you can reference a placeholder in your routes (`edit/{mymodel}`)
 
-Next, simply import `Propaganistas\LaravelFakeId\FakeIdTrait` into your model:
+Next, simply import the `RoutesWithFakeIds` trait into your model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
-use Propaganistas\LaravelFakeId\FakeIdTrait;
+use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
 
 class MyModel extends Model {
 
-  use FakeIdTrait;
+  use RoutesWithFakeIds;
 
 }
 ```

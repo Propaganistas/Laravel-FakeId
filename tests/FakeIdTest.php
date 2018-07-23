@@ -1,16 +1,17 @@
 <?php namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
 use Propaganistas\LaravelFakeId\Tests\Entities\Real;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class FakeIdTest extends TestCase
 {
     /**
+     * The package providers to register.
+     *
      * @param \Illuminate\Foundation\Application $application
      * @return array
      */
@@ -21,29 +22,32 @@ class FakeIdTest extends TestCase
         ];
     }
 
+    /**
+     * Setup the test environment.
+     *
+     * @return void
+     */
     public function setUp()
     {
         parent::setUp();
 
         $this->configureDatabase();
 
-        Route::model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
-        Route::fakeIdModel('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
-
-        $middlewareBindings = version_compare($this->app->version(), '5.3.0') >= 0 ? 'Illuminate\Routing\Middleware\SubstituteBindings' : null;
-
-        Route::get('real/{real}', [
+        $this->app['router']->model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
+        $this->app['router']->model('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
+        
+        $this->app['router']->get('real/{real}', [
             'as' => 'real', function ($real) {
                 return 'ID:' . $real->getKey();
             },
-            'middleware' => $middlewareBindings,
+            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
         ]);
 
-        Route::get('fake/{fake}', [
+        $this->app['router']->get('fake/{fake}', [
             'as' => 'fake', function ($fake) {
                 return 'ID:' . $fake->getKey();
             },
-            'middleware' => $middlewareBindings,
+            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
         ]);
     }
 
@@ -71,22 +75,18 @@ class FakeIdTest extends TestCase
         });
     }
 
-    public function testFacade()
+    /**
+     * @test
+     */
+    public function it_can_resolve_the_facade()
     {
         $this->assertInstanceOf('Jenssegers\Optimus\Optimus', FakeId::getFacadeRoot());
     }
 
-    public function testDefaultModelBindingStillWorks()
-    {
-        $model = Real::create([]);
-
-        $expected = url('real/' . $model->getRouteKey());
-        $actual = route('real', ['real' => $model]);
-
-        $this->assertEquals($expected, $actual);
-    }
-
-    public function testFakeIdTraitEnforcesEncodedRouteKey()
+    /**
+     * @test
+     */
+    public function it_yields_an_encoded_route_key()
     {
         $model = Fake::create([]);
 
@@ -94,7 +94,10 @@ class FakeIdTest extends TestCase
         $this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
     }
 
-    public function testFakeIdModelBindingWorks()
+    /**
+     * @test
+     */
+    public function it_uses_the_encoded_route_key()
     {
         $model = Fake::create([]);
 
@@ -104,7 +107,10 @@ class FakeIdTest extends TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testFakeModelIsDecodedCorrectly()
+    /**
+     * @test
+     */
+    public function it_finds_the_model_for_an_encoded_route_key()
     {
         $model = Fake::create([]);
 
@@ -114,7 +120,45 @@ class FakeIdTest extends TestCase
         $this->assertEquals(200, $response->getStatusCode());
     }
 
-    public function testRealModelIsStillDecodedCorrectly()
+    /**
+     * @test
+     */
+    public function it_throws_notfound_exception_when_no_model_was_found()
+    {
+        $response = $this->call('get', route('fake', ['fake' => '123']));
+
+        $this->assertNotNull($response->exception);
+        $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_notfound_exception_on_invalid_encoded_route_key()
+    {
+        $response = $this->call('get', route('fake', ['fake' => 'foo']));
+
+        $this->assertNotNull($response->exception);
+        $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
+    }
+
+    /**
+     * @test
+     */
+    public function it_still_yields_a_regular_key_for_regular_models()
+    {
+        $model = Real::create([]);
+
+        $expected = url('real/' . $model->getRouteKey());
+        $actual = route('real', ['real' => $model]);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @test
+     */
+    public function it_still_finds_the_model_for_a_regular_route_key()
     {
         $model = Real::create([]);
 
@@ -123,36 +167,4 @@ class FakeIdTest extends TestCase
         $this->assertContains((string) 'ID:' . $model->getKey(), $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
     }
-
-    /**
-     * @expectedException \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
-     */
-    public function testInvalidFakeModelReturnsNotFound()
-    {
-        $this->app['config']->set('app.debug', false);
-
-        $response = $this->call('get', route('fake', ['fake' => 'foo']));
-
-        if (isset($response->exception)) {
-            // Starting from L5.3 these exceptions are silenced, so let's rethrow them.
-            throw $response->exception;
-        }
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testInvalidFakeModelReturnsProperExceptionWhenDebugOn()
-    {
-        $this->app['config']->set('app.debug', true);
-
-        $response = $this->call('get', route('fake', ['fake' => 'foo']));
-
-        if (isset($response->exception)) {
-            // Starting from L5.3 these exceptions are silenced, so let's rethrow them.
-            throw $response->exception;
-        }
-    }
-
-
 }

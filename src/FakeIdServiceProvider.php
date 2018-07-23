@@ -1,9 +1,8 @@
 <?php namespace Propaganistas\LaravelFakeId;
 
-use Closure;
 use Illuminate\Support\ServiceProvider;
 use Jenssegers\Optimus\Optimus;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Propaganistas\LaravelFakeId\Commands\FakeIdSetupCommand;
 
 class FakeIdServiceProvider extends ServiceProvider
 {
@@ -27,16 +26,19 @@ class FakeIdServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Merge default config.
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'fakeid');
 
-        // Register setup command.
-        $this->app->singleton('fakeid.command.setup', function ($app) {
-            return new Commands\FakeIdSetupCommand();
-        });
-        $this->commands('fakeid.command.setup');
+        $this->registerCommand();
+        $this->registerOptimus();
+    }
 
-        // Register FakeId driver.
+    /**
+     * Register the Optimus container.
+     *
+     * @return void
+     */
+    protected function registerOptimus()
+    {
         $this->app->singleton('Jenssegers\Optimus\Optimus', function ($app) {
             return new Optimus(
                 $app['config']['fakeid.prime'],
@@ -47,49 +49,19 @@ class FakeIdServiceProvider extends ServiceProvider
 
         $this->app->alias('Jenssegers\Optimus\Optimus', 'optimus');
         $this->app->alias('Jenssegers\Optimus\Optimus', 'fakeid');
-
-        $this->registerRouterMacro();
     }
 
     /**
-     * Register the custom router macro.
+     * Register the Artisan setup command.
+     *
+     * @return void
      */
-    protected function registerRouterMacro()
+    protected function registerCommand()
     {
-        $this->app['router']->macro('fakeIdModel', function ($key, $class, Closure $callback = null) {
-            $this->bind($key, function ($value) use ($key, $class, $callback) {
-                if (is_null($value)) {
-                    return;
-                }
-
-                // For model binders, we will attempt to retrieve the models using the first
-                // method on the model instance. If we cannot retrieve the models we'll
-                // throw a not found exception otherwise we will return the instance.
-                $instance = $this->container->make($class);
-
-                // Decode FakeId first if applicable.
-                if (in_array('Propaganistas\LaravelFakeId\FakeIdTrait', class_uses_recursive($class))) {
-                    try {
-                        $value = $this->container->make('fakeid')->decode($value);
-                    } catch (\InvalidArgumentException $e) {
-                        throw config('app.debug') ? $e : new NotFoundHttpException;
-                    }
-                }
-
-                if ($model = $instance->where($instance->getRouteKeyName(), $value)->first()) {
-                    return $model;
-                }
-
-                // If a callback was supplied to the method we will call that to determine
-                // what we should do when the model is not found. This just gives these
-                // developer a little greater flexibility to decide what will happen.
-                if ($callback instanceof Closure) {
-                    return call_user_func($callback, $value);
-                }
-
-                throw new NotFoundHttpException;
-            });
+        $this->app->singleton('fakeid.command.setup', function ($app) {
+            return new FakeIdSetupCommand;
         });
-    }
 
+        $this->commands('fakeid.command.setup');
+    }
 }

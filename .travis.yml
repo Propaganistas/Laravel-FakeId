@@ -12,16 +12,6 @@ cache:
 matrix:
   fast_finish: true
   include:
-    - php: 7.0 # Laravel 5.0 requires Mcrypt, but it is deprecated as of PHP 7.1
-      env: ILLUMINATE_VERSION=5.0.* TESTBENCH_VERSION=3.0.* PHPUNIT_VERSION=4.*
-    - php: 7.2
-      env: ILLUMINATE_VERSION=5.1.* TESTBENCH_VERSION=3.1.* PHPUNIT_VERSION=5.*
-    - php: 7.2
-      env: ILLUMINATE_VERSION=5.2.* TESTBENCH_VERSION=3.2.* PHPUNIT_VERSION=5.*
-    - php: 7.2
-      env: ILLUMINATE_VERSION=5.3.* TESTBENCH_VERSION=3.3.* PHPUNIT_VERSION=5.*
-    - php: 7.2
-      env: ILLUMINATE_VERSION=5.4.* TESTBENCH_VERSION=3.4.* PHPUNIT_VERSION=5.*
     - php: 7.2
       env: ILLUMINATE_VERSION=5.5.* TESTBENCH_VERSION=3.5.* PHPUNIT_VERSION=6.*
     - php: 7.2
@@ -34,7 +24,10 @@ before_install:
   - cp $HOME/.phpenv/versions/$(phpenv global)/etc/conf.d/xdebug.ini /tmp
   - phpenv config-rm xdebug.ini
   # Require a specific Illuminate version.
-  - if [ -n "$ILLUMINATE_VERSION" ] ; then composer require laravel/framework:${ILLUMINATE_VERSION} --no-update; fi
+  - if [ -n "$ILLUMINATE_VERSION" ] ; then composer require illuminate/config:${ILLUMINATE_VERSION} --no-update; fi
+  - if [ -n "$ILLUMINATE_VERSION" ] ; then composer require illuminate/container:${ILLUMINATE_VERSION} --no-update; fi
+  - if [ -n "$ILLUMINATE_VERSION" ] ; then composer require illuminate/routing:${ILLUMINATE_VERSION} --no-update; fi
+  - if [ -n "$ILLUMINATE_VERSION" ] ; then composer require illuminate/support:${ILLUMINATE_VERSION} --no-update; fi
   - if [ -n "$TESTBENCH_VERSION" ] ; then composer require orchestra/testbench:${TESTBENCH_VERSION} --no-update; fi
   - if [ -n "$PHPUNIT_VERSION" ] ; then composer require phpunit/phpunit:${PHPUNIT_VERSION} --no-update; fi
   

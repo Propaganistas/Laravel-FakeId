@@ -12,6 +12,8 @@ return [
     | - The inverse prime so that (PRIME * INVERSE) & MAXID == 1
     | - A large random integer lower than 2147483647
     |
+    | Run the `fakeid:setup` Artisan command to auto-generate random values.
+    |
     */
 
     'prime'   => env('FAKEID_PRIME', 961748927),
