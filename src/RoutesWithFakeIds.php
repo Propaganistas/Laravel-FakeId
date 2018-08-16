@@ -18,17 +18,17 @@ trait RoutesWithFakeIds
     /**
      * Retrieve model for route model binding
      *
-     * @param  mixed  $routeKey
-     * @return null|\Illuminate\Database\Eloquent\Model
+     * @param  mixed  $value
+     * @return \Illuminate\Database\Eloquent\Model|null
      */
-    public function resolveRouteBinding($routeKey)
+    public function resolveRouteBinding($value)
     {
         try {
-            $key = App::make('fakeid')->decode($routeKey);
+            $value = App::make('fakeid')->decode($value);
         } catch (Exception $e) {
             return null;
         }
 
-        return $this->where($this->getRouteKeyName(), $key)->first();
+        return $this->where($this->getRouteKeyName(), $value)->first();
     }
 }
