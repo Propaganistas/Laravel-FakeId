@@ -17,10 +17,10 @@
     ],
     "require": {
         "php": ">=7.0",
-        "illuminate/config": ">=5.5,<5.7",
-        "illuminate/container": ">=5.5,<5.7",
-        "illuminate/routing": ">=5.5,<5.7",
-        "illuminate/support": ">=5.5,<5.7",
+        "illuminate/config": ">=5.5,<5.8",
+        "illuminate/container": ">=5.5,<5.8",
+        "illuminate/routing": ">=5.5,<5.8",
+        "illuminate/support": ">=5.5,<5.8",
         "jenssegers/optimus": "^0.2.2",
         "phpseclib/phpseclib": "^2.0"
     },
