@@ -16,12 +16,12 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
-        "illuminate/config": ">=5.5,<5.8",
-        "illuminate/container": ">=5.5,<5.8",
-        "illuminate/routing": ">=5.5,<5.8",
-        "illuminate/support": ">=5.5,<5.8",
-        "jenssegers/optimus": "^0.2.2",
+        "php": ">=7.1",
+        "illuminate/config": ">=5.5,<5.9",
+        "illuminate/container": ">=5.5,<5.9",
+        "illuminate/routing": ">=5.5,<5.9",
+        "illuminate/support": ">=5.5,<5.9",
+        "jenssegers/optimus": "^1.0",
         "phpseclib/phpseclib": "^2.0"
     },
     "require-dev": {

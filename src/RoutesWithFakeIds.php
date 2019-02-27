@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\App;
 use Exception;
+use RuntimeException;
 
 trait RoutesWithFakeIds
 {
@@ -12,7 +13,13 @@ trait RoutesWithFakeIds
      */
     public function getRouteKey()
     {
-        return App::make('fakeid')->encode($this->getKey());
+        $key = $this->getKey();
+
+        if ($this->getKeyType() === 'int' && (ctype_digit($key) || is_int($key))) {
+            return App::make('fakeid')->encode((int) $key);
+        }
+
+        throw new RuntimeException('Key should be of type int to encode into a fake id.');
     }
 
     /**
@@ -23,8 +30,12 @@ trait RoutesWithFakeIds
      */
     public function resolveRouteBinding($value)
     {
+        if (! (ctype_digit($value) || is_int($value))) {
+            return null;
+        }
+
         try {
-            $value = App::make('fakeid')->decode($value);
+            $value = App::make('fakeid')->decode((int) $value);
         } catch (Exception $e) {
             return null;
         }

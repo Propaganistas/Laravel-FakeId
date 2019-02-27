@@ -6,6 +6,7 @@ use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
 use Propaganistas\LaravelFakeId\Tests\Entities\Real;
+use RuntimeException;
 
 class FakeIdTest extends TestCase
 {
@@ -27,7 +28,7 @@ class FakeIdTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -166,5 +167,29 @@ class FakeIdTest extends TestCase
 
         $this->assertContains((string) 'ID:' . $model->getKey(), $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @test
+     */
+    public function it_doesnt_throw_on_stringified_int_key()
+    {
+    	$model = Fake::create([]);
+    	$model->id = '123';
+
+    	$this->assertEquals($model->getKey(), 123);
+    	$this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
+    }
+
+    /**
+     * @test
+     */
+    public function it_throws_runtime_exception_on_non_int_key()
+    {
+    	$model = Fake::create([]);
+    	$model->setKeyType('string');
+
+    	$this->expectException(RuntimeException::class);
+    	$this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
     }
 }
