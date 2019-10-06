@@ -2,6 +2,7 @@
 
 namespace Propaganistas\LaravelFakeId\Commands;
 
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
 use Jenssegers\Optimus\Energon;
 
@@ -59,7 +60,7 @@ class FakeIdSetupCommand extends Command
      */
     protected function hasExistingConfiguration($file)
     {
-        return str_contains(implode(' ', $file), 'FAKEID_');
+        return Str::contains(implode(' ', $file), 'FAKEID_');
     }
 
     /**
