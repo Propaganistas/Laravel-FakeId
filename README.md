@@ -33,9 +33,9 @@ First of all, make sure the model is bound to Laravel's Router using the `model(
 Route::model('mymodel', 'App\MyModel');
 ```
 
-This way you can reference a placeholder in your routes (`edit/{mymodel}`)
+This way you can reference a placeholder in your routes (`edit/{mymodel}`). By default Laravel will insert the model's primary key in the placeholder. But...
 
-Next, simply import the `RoutesWithFakeIds` trait into your model:
+...if you then import the `RoutesWithFakeIds` trait into your model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
@@ -48,36 +48,36 @@ class MyModel extends Model {
 }
 ```
 
-All routes generated for this model will now automatically contain obfuscated IDs and incoming requests to `{mymodel}` routes containing obfuscated IDs will be handled correctly.
+...all routes generated for this particular model will expose a **fake** ID instead of the raw primary key. Moreover incoming requests containing those fake IDs are automatically converted back to a real ID. The obfuscation layer is therefore transparent and doesn't require you to rethink everything. Just use Laravel as you normally would.
 
-### Example Usage ###
-Assuming a `MyModel` model having a named `show` route.
+
+### Example ###
+Assuming an `Article` model having a named `show` route.
 
 `routes/web.php`:
 
 ```php
-Route::get('mymodels/{model}', 'MyModelController@show')->name('mymodels.show');
+Route::model('article', 'App\Article');
+
+Route::get('articles/{article}', 'ArticleController@show')->name('articles.show');
 ```
 
-A route to this specific endpoint can be generated using Laravel's `route()` helper.
-
-`MyModelController.php`:
+`app/Article.php`
 
 ```php
-public function show()
-{ 
-  return view('mymodels.index', [
-    'myModels' => MyModel::all()
-  ]);
+use Illuminate\Database\Eloquent\Model;
+use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
+
+class Article extends Model {
+  use RoutesWithFakeIds;
 }
 ```
 
-In the `mymodels.index.blade.php` view:
+A route to this specific endpoint can now be generated using Laravel's `route()` helper, and it will automatically contain a **fake** ID:
+
 
 ```php
-@foreach ($myModels as $model)
-  <a href="{{ route('mymodels.show', $model) }}"> {{ $model->name }} </a>
-@endforeach
+<a href="{{ route('articles.show', $article) }}"> {{ $article->name }} </a>
 ```
 
 
