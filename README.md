@@ -50,6 +50,37 @@ class MyModel extends Model {
 
 All routes generated for this model will now automatically contain obfuscated IDs and incoming requests to `{mymodel}` routes containing obfuscated IDs will be handled correctly.
 
+### Example Usage ###
+Assuming a `MyModel` model having a named `show` route.
+
+`routes/web.php`:
+
+```php
+Route::get('mymodels/{model}', 'MyModelController@show')->name('mymodels.show');
+```
+
+A route to this specific endpoint can be generated using Laravel's `route()` helper.
+
+`MyModelController.php`:
+
+```php
+public function show()
+{ 
+  return view('mymodels.index', [
+    'myModels' => MyModel::all()
+  ]);
+}
+```
+
+In the `mymodels.index.blade.php` view:
+
+```php
+@foreach ($myModels as $model)
+  <a href="{{ route('mymodels.show', $model) }}"> {{ $model->name }} </a>
+@endforeach
+```
+
+
 ### FAQ
 
 **Why didn't you implement [Hashids](https://github.com/vinkla/hashids) instead of [Optimus](https://github.com/jenssegers/optimus)?**
