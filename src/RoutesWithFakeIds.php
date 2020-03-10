@@ -26,9 +26,10 @@ trait RoutesWithFakeIds
      * Retrieve model for route model binding
      *
      * @param  mixed  $value
+     * @param  string|null  $field
      * @return \Illuminate\Database\Eloquent\Model|null
      */
-    public function resolveRouteBinding($value)
+    public function resolveRouteBinding($value, $field = null)
     {
         if (! (ctype_digit($value) || is_int($value))) {
             return null;
@@ -40,6 +41,6 @@ trait RoutesWithFakeIds
             return null;
         }
 
-        return $this->where($this->getRouteKeyName(), $value)->first();
+        return $this->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }
