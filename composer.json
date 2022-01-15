@@ -22,7 +22,6 @@
         "illuminate/routing": "^6.0|^7.0|^8.0|^9.0",
         "illuminate/support": "^6.0|^7.0|^8.0|^9.0",
         "jenssegers/optimus": "^1.0",
-        "phpseclib/phpseclib": "^2.0"
     },
     "require-dev": {
         "orchestra/testbench": "*",
