@@ -15,7 +15,7 @@ trait RoutesWithFakeIds
     {
         $key = $this->getKey();
 
-        if ($this->getKeyType() === 'int' && (ctype_digit($key) || is_int($key))) {
+        if ($this->getKeyType() === 'int' && (is_int($key) || ctype_digit($key))) {
             return App::make('fakeid')->encode((int) $key);
         }
 
