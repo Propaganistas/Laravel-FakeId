@@ -117,7 +117,7 @@ class FakeIdTest extends TestCase
 
         $response = $this->call('get', route('fake', ['fake' => $model]));
 
-        $this->assertRegexp('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
+        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
     }
 
@@ -165,7 +165,7 @@ class FakeIdTest extends TestCase
 
         $response = $this->call('get', route('real', ['real' => $model]));
 
-        $this->assertRegexp('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
+        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
     }
 
