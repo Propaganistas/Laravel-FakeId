@@ -23,24 +23,25 @@ trait RoutesWithFakeIds
     }
 
     /**
-     * Retrieve model for route model binding
+     * Retrieve the model for a bound value.
      *
+     * @param  \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Relations\Relation  $query
      * @param  mixed  $value
      * @param  string|null  $field
-     * @return \Illuminate\Database\Eloquent\Model|null
+     * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
-    public function resolveRouteBinding($value, $field = null)
+    public function resolveRouteBindingQuery($query, $value, $field = null)
     {
         if (! (ctype_digit($value) || is_int($value))) {
-            return null;
+            return $query;
         }
 
         try {
             $value = App::make('fakeid')->decode((int) $value);
         } catch (Exception $e) {
-            return null;
+            return $query;
         }
 
-        return $this->where($field ?? $this->getRouteKeyName(), $value)->first();
+        return $query->where($field ?? $this->getRouteKeyName(), $value);
     }
 }
