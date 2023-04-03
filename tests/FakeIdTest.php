@@ -6,6 +6,7 @@ use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
 use Propaganistas\LaravelFakeId\Tests\Entities\Real;
+use Propaganistas\LaravelFakeId\Tests\Entities\Deletable;
 use RuntimeException;
 
 class FakeIdTest extends TestCase
@@ -36,20 +37,30 @@ class FakeIdTest extends TestCase
 
         $this->app['router']->model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
         $this->app['router']->model('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
-        
+
         $this->app['router']->get('real/{real}', [
-            'as' => 'real', function ($real) {
+            'as' => 'real',
+            'uses' => function ($real) {
                 return 'ID:' . $real->getKey();
             },
             'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
         ]);
 
         $this->app['router']->get('fake/{fake}', [
-            'as' => 'fake', function ($fake) {
+            'as' => 'fake',
+            'uses' => function ($fake) {
                 return 'ID:' . $fake->getKey();
             },
             'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
         ]);
+
+        $this->app['router']->get('deletable/{deletable}', [
+            'as' => 'deletable',
+            'uses' => function (Deletable $deletable) {
+                return 'ID:' . $deletable->getKey();
+            },
+            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
+        ])->withTrashed();
     }
 
     protected function configureDatabase()
@@ -73,6 +84,12 @@ class FakeIdTest extends TestCase
         DB::schema()->create('fakes', function ($table) {
             $table->increments('id');
             $table->timestamps();
+        });
+
+        DB::schema()->create('deletables', function ($table) {
+            $table->increments('id');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -116,6 +133,22 @@ class FakeIdTest extends TestCase
         $model = Fake::create([]);
 
         $response = $this->call('get', route('fake', ['fake' => $model]));
+
+        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    /**
+     * @test
+     */
+    public function it_finds_the_deleted_model_for_an_encoded_route_key()
+    {
+        $model = Deletable::create([]);
+        $model->delete();
+
+        $model = Deletable::withTrashed()->find($model->getKey());
+
+        $response = $this->call('get', route('deletable', ['deletable' => $model]));
 
         $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
