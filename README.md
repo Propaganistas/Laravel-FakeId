@@ -25,15 +25,7 @@ Enables automatic Eloquent model ID obfuscation in routes using [Optimus](https:
 
 ### Usage
 
-First of all, make sure the model is bound to Laravel's Router using the `model()` method, e.g. on top of the `routes.php` file (or in the `boot()` method of `RouteServiceProvider` if you use route caching):
-
-```php
-Route::model('mymodel', 'App\MyModel');
-```
-
-This way you can reference a placeholder in your routes (`edit/{mymodel}`). By default Laravel will insert the model's primary key in the placeholder. But...
-
-...if you then import the `RoutesWithFakeIds` trait into your model:
+Simply import the `RoutesWithFakeIds` trait into your model:
 
 ```php
 use Illuminate\Database\Eloquent\Model;
@@ -46,7 +38,7 @@ class MyModel extends Model {
 }
 ```
 
-...all routes generated for this particular model will expose a **fake** ID instead of the raw primary key. Moreover incoming requests containing those fake IDs are automatically converted back to a real ID. The obfuscation layer is therefore transparent and doesn't require you to rethink everything. Just use Laravel as you normally would.
+All routes generated for this particular model will expose a **fake** ID instead of the raw primary key. Moreover incoming requests containing those fake IDs are automatically converted back to a real ID. The obfuscation layer is therefore transparent and doesn't require you to rethink everything. Just use Laravel as you normally would.
 
 
 ### Example ###
@@ -55,8 +47,6 @@ Assuming an `Article` model having a named `show` route.
 `routes/web.php`:
 
 ```php
-Route::model('article', 'App\Article');
-
 Route::get('articles/{article}', 'ArticleController@show')->name('articles.show');
 ```
 

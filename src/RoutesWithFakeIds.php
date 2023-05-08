@@ -32,14 +32,10 @@ trait RoutesWithFakeIds
      */
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {
-        if (! (ctype_digit($value) || is_int($value))) {
-            return $query;
-        }
-
-        try {
-            $value = App::make('fakeid')->decode((int) $value);
-        } catch (Exception $e) {
-            return $query;
+        if (ctype_digit($value) || is_int($value)) {
+            try {
+                $value = App::make('fakeid')->decode((int) $value);
+            } catch (Exception $e) {}
         }
 
         return $query->where($field ?? $this->getRouteKeyName(), $value);

@@ -2,65 +2,31 @@
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
+use Propaganistas\LaravelFakeId\FakeIdServiceProvider;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
+use Propaganistas\LaravelFakeId\Tests\Entities\FakeWithRouteKeyName;
 use Propaganistas\LaravelFakeId\Tests\Entities\Real;
 use Propaganistas\LaravelFakeId\Tests\Entities\Deletable;
 use RuntimeException;
 
 class FakeIdTest extends TestCase
 {
-    /**
-     * The package providers to register.
-     *
-     * @param \Illuminate\Foundation\Application $application
-     * @return array
-     */
     protected function getPackageProviders($application)
     {
         return [
-            'Propaganistas\LaravelFakeId\FakeIdServiceProvider',
+            FakeIdServiceProvider::class,
         ];
     }
 
-    /**
-     * Setup the test environment.
-     *
-     * @return void
-     */
     public function setUp(): void
     {
         parent::setUp();
 
         $this->configureDatabase();
-
-        $this->app['router']->model('real', 'Propaganistas\LaravelFakeId\Tests\Entities\Real');
-        $this->app['router']->model('fake', 'Propaganistas\LaravelFakeId\Tests\Entities\Fake');
-
-        $this->app['router']->get('real/{real}', [
-            'as' => 'real',
-            'uses' => function ($real) {
-                return 'ID:' . $real->getKey();
-            },
-            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
-        ]);
-
-        $this->app['router']->get('fake/{fake}', [
-            'as' => 'fake',
-            'uses' => function ($fake) {
-                return 'ID:' . $fake->getKey();
-            },
-            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
-        ]);
-
-        $this->app['router']->get('deletable/{deletable}', [
-            'as' => 'deletable',
-            'uses' => function (Deletable $deletable) {
-                return 'ID:' . $deletable->getKey();
-            },
-            'middleware' => 'Illuminate\Routing\Middleware\SubstituteBindings',
-        ])->withTrashed();
     }
 
     protected function configureDatabase()
@@ -93,136 +59,213 @@ class FakeIdTest extends TestCase
         });
     }
 
-    /**
-     * @test
-     */
-    public function it_can_resolve_the_facade()
+    protected function createRoute($path, $handler)
+    {
+        return $this->app['router']->get($path, [
+            'middleware' => SubstituteBindings::class,
+            'uses' => $handler,
+        ]);
+    }
+
+    /** @test */
+    public function it_resolves_the_facade()
     {
         $this->assertInstanceOf('Jenssegers\Optimus\Optimus', FakeId::getFacadeRoot());
     }
 
-    /**
-     * @test
-     */
-    public function it_yields_an_encoded_route_key()
+    /** @test */
+    public function it_encodes_the_route_key()
     {
-        $model = Fake::create([]);
+        $model = Fake::create();
 
         $this->assertNotEquals($model->getRouteKey(), $model->getKey());
         $this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
     }
 
-    /**
-     * @test
-     */
-    public function it_uses_the_encoded_route_key()
+    /** @test */
+    public function it_decodes_the_route_key_when_resolving()
     {
-        $model = Fake::create([]);
+        $model = Fake::create();
 
-        $expected = url('fake/' . $model->getRouteKey());
-        $actual = route('fake', ['fake' => $model]);
+        $query = $model->resolveRouteBindingQuery(Fake::query(), $model->getRouteKey());
 
-        $this->assertEquals($expected, $actual);
+        $this->assertNotEquals($model->getRouteKey(), $model->getKey());
+        $this->assertEquals('select * from "fakes" where "id" = ?', $query->toSql());
+        $this->assertEquals([$model->getKey()], $query->getBindings());
     }
 
-    /**
-     * @test
-     */
-    public function it_finds_the_model_for_an_encoded_route_key()
+    /** @test */
+    public function it_decodes_the_route_key_when_resolving_with_the_custom_route_key_name()
     {
-        $model = Fake::create([]);
+        $model = FakeWithRouteKeyName::create();
 
-        $response = $this->call('get', route('fake', ['fake' => $model]));
+        $query = $model->resolveRouteBindingQuery(Fake::query(), $model->getRouteKey());
 
-        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
+        $this->assertNotEquals($model->getRouteKey(), $model->getKey());
+        $this->assertEquals('select * from "fakes" where "foo" = ?', $query->toSql());
+        $this->assertEquals([$model->getKey()], $query->getBindings());
+    }
+
+    /** @test */
+    public function it_decodes_the_route_key_when_resolving_with_a_custom_attribute()
+    {
+        $model = Fake::create();
+
+        $query = $model->resolveRouteBindingQuery(Fake::query(), $model->getRouteKey(), 'foo');
+
+        $this->assertNotEquals($model->getRouteKey(), $model->getKey());
+        $this->assertEquals('select * from "fakes" where "foo" = ?', $query->toSql());
+        $this->assertEquals([$model->getKey()], $query->getBindings());
+    }
+
+    /** @test */
+    public function it_doesnt_throw_when_resolving_an_undecodable_route_key()
+    {
+        $model = Fake::create();
+
+        $query = $model->resolveRouteBindingQuery(Fake::query(), 'abc');
+
+        $this->assertNotEquals($model->getRouteKey(), $model->getKey());
+        $this->assertEquals('select * from "fakes" where "id" = ?', $query->toSql());
+        $this->assertEquals(['abc'], $query->getBindings());
+    }
+
+    /** @test */
+    public function it_resolves_implicit_bindings()
+    {
+        $this->createRoute('fake/{fake}', function (Fake $fake) {
+            return "ID:{$fake->getKey()}";
+        });
+
+        $model = Fake::create();
+
+        $response = $this->get("fake/{$model->getRouteKey()}");
+
         $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
     }
 
-    /**
-     * @test
-     */
-    public function it_finds_the_deleted_model_for_an_encoded_route_key()
+    /** @test */
+    public function it_resolves_implicit_bindings_with_trashed()
     {
-        $model = Deletable::create([]);
+        $this->createRoute('fake/{deletable}', function (Deletable $deletable) {
+            return "ID:{$deletable->getKey()}";
+        })->withTrashed();
+
+        $model = Deletable::create();
         $model->delete();
 
-        $model = Deletable::withTrashed()->find($model->getKey());
+        $response = $this->get("fake/{$model->getRouteKey()}");
 
-        $response = $this->call('get', route('deletable', ['deletable' => $model]));
-
-        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
         $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
+    }
+
+    /** @test */
+    public function it_resolves_explicit_bindings()
+    {
+        Route::model('fake', Fake::class);
+
+        $this->createRoute('fake/{fake}', function (Fake $fake) {
+            return "ID:{$fake->getKey()}";
+        });
+
+        $model = Fake::create();
+
+        $response = $this->get("fake/{$model->getRouteKey()}");
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
     }
 
     /**
+     * Explicit model bindings completely omit a model's route resolution logic.
+     * `$route->withTrashed()` only works for implicit bindings, so it won't
+     * help us here. There's no real way to support this feature properly.
+     *
+     * This test solely exists to remind us all of that :-)
+     *
+     * Or if Laravel implements `withTrashed()` support for explicit
+     * bindings some time, it will notify us by simply failing.
+     *
+     * See next test for a working explicit binding callback.
+     *
      * @test
      */
-    public function it_throws_notfound_exception_when_no_model_was_found()
+    public function it_cannot_resolve_soft_deleted_explicit_bindings_with_trashed()
     {
-        $response = $this->call('get', route('fake', ['fake' => '123']));
+        Route::model('deletable', Deletable::class);
 
+        $this->createRoute('fake/{deletable}', function (Deletable $deletable) {
+            return "ID:{$deletable->getKey()}";
+        })->withTrashed(); // Has NO effect for explicit bindings.
+
+        $model = Deletable::create();
+        $model->delete();
+
+        $response = $this->get("fake/{$model->getRouteKey()}");
+
+        $this->assertEquals(404, $response->getStatusCode());
         $this->assertNotNull($response->exception);
         $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
     }
 
     /**
+     * This test solely exists to provide a working boilerplate
+     * to showcase how explicit bindings could be configured
+     * to properly work with soft-deleted models.
+     *
      * @test
      */
-    public function it_throws_notfound_exception_on_invalid_encoded_route_key()
+    public function it_resolves_soft_deleted_explicit_bindings_with_trashed_with_working_callback()
     {
-        $response = $this->call('get', route('fake', ['fake' => 'foo']));
+        // This is the important part.
+        Route::model('deletable', Deletable::class, function ($value) {
+            $query = Deletable::query()->withTrashed();
+            return (new Deletable)->resolveRouteBindingQuery($query, $value)->firstOrFail();
+        });
 
+        $this->createRoute('fake/{deletable}', function (Deletable $deletable) {
+            return "ID:{$deletable->getKey()}";
+        })->withTrashed(); // Has NO effect for explicit bindings.
+
+        $model = Deletable::create();
+        $model->delete();
+
+        $response = $this->get("fake/{$model->getRouteKey()}");
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
+    }
+
+    /** @test */
+    public function it_returns_notfound_on_model_not_found()
+    {
+        $this->createRoute('fake/{fake}', function (Fake $fake) {
+            return "ID:{$fake->getKey()}";
+        });
+
+        $model = Fake::create();
+        $model->delete();
+
+        $response = $this->get("fake/{$model->getRouteKey()}");
+
+        $this->assertEquals(404, $response->getStatusCode());
         $this->assertNotNull($response->exception);
         $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
     }
 
-    /**
-     * @test
-     */
-    public function it_still_yields_a_regular_key_for_regular_models()
+    /** @test */
+    public function it_returns_notfound_on_undecodable_route_key()
     {
-        $model = Real::create([]);
+        $this->createRoute('fake/{fake}', function (Fake $fake) {
+            return "ID:{$fake->getKey()}";
+        });
 
-        $expected = url('real/' . $model->getRouteKey());
-        $actual = route('real', ['real' => $model]);
+        $response = $this->get('fake/foo');
 
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * @test
-     */
-    public function it_still_finds_the_model_for_a_regular_route_key()
-    {
-        $model = Real::create([]);
-
-        $response = $this->call('get', route('real', ['real' => $model]));
-
-        $this->assertMatchesRegularExpression('/ID\:' . (string) $model->getKey() . '/', $response->getContent());
-        $this->assertEquals(200, $response->getStatusCode());
-    }
-
-    /**
-     * @test
-     */
-    public function it_doesnt_throw_on_stringified_int_key()
-    {
-    	$model = Fake::create([]);
-    	$model->id = '123';
-
-    	$this->assertEquals($model->getKey(), 123);
-    	$this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
-    }
-
-    /**
-     * @test
-     */
-    public function it_throws_runtime_exception_on_non_int_key()
-    {
-    	$model = Fake::create([]);
-    	$model->setKeyType('string');
-
-    	$this->expectException(RuntimeException::class);
-    	$this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertNotNull($response->exception);
+        $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
     }
 }
