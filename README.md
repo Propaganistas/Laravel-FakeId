@@ -31,15 +31,13 @@ Simply import the `RoutesWithFakeIds` trait into your model:
 use Illuminate\Database\Eloquent\Model;
 use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
 
-class MyModel extends Model {
-
-  use RoutesWithFakeIds;
-
+class MyModel extends Model
+{
+    use RoutesWithFakeIds;
 }
 ```
 
 All routes generated for this particular model will expose a **fake** ID instead of the raw primary key. Moreover incoming requests containing those fake IDs are automatically converted back to a real ID. The obfuscation layer is therefore transparent and doesn't require you to rethink everything. Just use Laravel as you normally would.
-
 
 ### Example ###
 Assuming an `Article` model having a named `show` route.
@@ -56,8 +54,9 @@ Route::get('articles/{article}', 'ArticleController@show')->name('articles.show'
 use Illuminate\Database\Eloquent\Model;
 use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
 
-class Article extends Model {
-  use RoutesWithFakeIds;
+class Article extends Model
+{
+    use RoutesWithFakeIds;
 }
 ```
 
