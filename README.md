@@ -45,10 +45,11 @@ Assuming an `Article` model having a named `show` route.
 `routes/web.php`:
 
 ```php
-Route::get('articles/{article}', 'ArticleController@show')->name('articles.show');
+use App\Http\Controllers\ArticleController;
+Route::get('articles/{article}', [ArticleController::class,'show'])->name('articles.show');
 ```
 
-`app/Article.php`
+`App/Models/Article.php`
 
 ```php
 use Illuminate\Database\Eloquent\Model;
