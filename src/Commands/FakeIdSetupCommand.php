@@ -2,8 +2,8 @@
 
 namespace Propaganistas\LaravelFakeId\Commands;
 
-use Illuminate\Support\Str;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Jenssegers\Optimus\Energon;
 
 class FakeIdSetupCommand extends Command
@@ -43,7 +43,7 @@ class FakeIdSetupCommand extends Command
             }
 
             if (! $this->option('overwrite')) {
-                if (! $this->confirm("Overwrite existing configuration?")) {
+                if (! $this->confirm('Overwrite existing configuration?')) {
                     return;
                 }
             }
@@ -52,7 +52,7 @@ class FakeIdSetupCommand extends Command
         }
 
         $this->writeNewConfiguration($env, $path);
-        $this->info("FakeId configured correctly.");
+        $this->info('FakeId configured correctly.');
     }
 
     /**
@@ -66,7 +66,7 @@ class FakeIdSetupCommand extends Command
     /**
      * Removes existing FakeId configuration from the given file array.
      *
-     * @param array $file
+     * @param  array  $file
      */
     protected function removeExistingConfiguration(&$file)
     {
@@ -80,16 +80,16 @@ class FakeIdSetupCommand extends Command
     /**
      * Writes new configuration using the provided file array to the given path.
      *
-     * @param array $file
-     * @param string $path
+     * @param  array  $file
+     * @param  string  $path
      */
     protected function writeNewConfiguration($file, $path)
     {
-        list($prime, $inverse, $rand) = Energon::generate();
+        [$prime, $inverse, $rand] = Energon::generate();
 
-        $file[] = "\nFAKEID_PRIME=" . $prime;
-        $file[] = "\nFAKEID_INVERSE=" . $inverse;
-        $file[] = "\nFAKEID_RANDOM=" . $rand;
+        $file[] = "\nFAKEID_PRIME=".$prime;
+        $file[] = "\nFAKEID_INVERSE=".$inverse;
+        $file[] = "\nFAKEID_RANDOM=".$rand;
 
         file_put_contents($path, implode('', $file), LOCK_EX);
     }

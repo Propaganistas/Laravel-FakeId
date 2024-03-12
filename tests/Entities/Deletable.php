@@ -1,4 +1,5 @@
 <?php
+
 namespace Propaganistas\LaravelFakeId\Tests\Entities;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,6 +8,6 @@ use Propaganistas\LaravelFakeId\RoutesWithFakeIds;
 
 class Deletable extends Model
 {
-    use SoftDeletes;
     use RoutesWithFakeIds;
+    use SoftDeletes;
 }

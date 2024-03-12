@@ -1,4 +1,5 @@
 <?php
+
 namespace Propaganistas\LaravelFakeId\Tests\Entities;
 
 use Illuminate\Database\Eloquent\Model;

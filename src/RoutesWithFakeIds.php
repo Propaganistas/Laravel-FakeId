@@ -1,7 +1,9 @@
-<?php namespace Propaganistas\LaravelFakeId;
+<?php
 
-use Illuminate\Support\Facades\App;
+namespace Propaganistas\LaravelFakeId;
+
 use Exception;
+use Illuminate\Support\Facades\App;
 use RuntimeException;
 
 trait RoutesWithFakeIds
@@ -35,7 +37,8 @@ trait RoutesWithFakeIds
         if (ctype_digit($value) || is_int($value)) {
             try {
                 $value = App::make('fakeid')->decode((int) $value);
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
         }
 
         return $query->where($field ?? $this->getRouteKeyName(), $value);

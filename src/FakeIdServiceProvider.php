@@ -1,4 +1,6 @@
-<?php namespace Propaganistas\LaravelFakeId;
+<?php
+
+namespace Propaganistas\LaravelFakeId;
 
 use Illuminate\Support\ServiceProvider;
 use Jenssegers\Optimus\Optimus;
@@ -15,7 +17,7 @@ class FakeIdServiceProvider extends ServiceProvider
     {
         // Publish config.
         $this->publishes([
-            __DIR__ . '/../config/config.php' => config_path('fakeid.php'),
+            __DIR__.'/../config/config.php' => config_path('fakeid.php'),
         ], 'config');
     }
 
@@ -26,7 +28,7 @@ class FakeIdServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'fakeid');
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'fakeid');
 
         $this->registerCommand();
         $this->registerOptimus();

@@ -1,17 +1,19 @@
-<?php namespace Propaganistas\LaravelFakeId\Tests;
+<?php
+
+namespace Propaganistas\LaravelFakeId\Tests;
 
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 use Propaganistas\LaravelFakeId\Facades\FakeId;
 use Propaganistas\LaravelFakeId\FakeIdServiceProvider;
+use Propaganistas\LaravelFakeId\Tests\Entities\Deletable;
 use Propaganistas\LaravelFakeId\Tests\Entities\Fake;
 use Propaganistas\LaravelFakeId\Tests\Entities\FakeWithRouteKeyName;
 use Propaganistas\LaravelFakeId\Tests\Entities\Real;
-use Propaganistas\LaravelFakeId\Tests\Entities\Deletable;
-use RuntimeException;
 
 class FakeIdTest extends TestCase
 {
@@ -33,11 +35,11 @@ class FakeIdTest extends TestCase
     {
         $db = new DB;
         $db->addConnection([
-            'driver'    => 'sqlite',
-            'database'  => ':memory:',
-            'charset'   => 'utf8',
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'charset' => 'utf8',
             'collation' => 'utf8_unicode_ci',
-            'prefix'    => '',
+            'prefix' => '',
         ]);
         $db->bootEloquent();
         $db->setAsGlobal();
@@ -67,13 +69,13 @@ class FakeIdTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_resolves_the_facade()
     {
         $this->assertInstanceOf('Jenssegers\Optimus\Optimus', FakeId::getFacadeRoot());
     }
 
-    /** @test */
+    #[Test]
     public function it_encodes_the_route_key()
     {
         $model = Fake::create();
@@ -82,7 +84,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals($model->getRouteKey(), app('fakeid')->encode($model->getKey()));
     }
 
-    /** @test */
+    #[Test]
     public function it_decodes_the_route_key_when_resolving()
     {
         $model = Fake::create();
@@ -94,7 +96,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals([$model->getKey()], $query->getBindings());
     }
 
-    /** @test */
+    #[Test]
     public function it_decodes_the_route_key_when_resolving_with_the_custom_route_key_name()
     {
         $model = FakeWithRouteKeyName::create();
@@ -106,7 +108,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals([$model->getKey()], $query->getBindings());
     }
 
-    /** @test */
+    #[Test]
     public function it_decodes_the_route_key_when_resolving_with_a_custom_attribute()
     {
         $model = Fake::create();
@@ -118,7 +120,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals([$model->getKey()], $query->getBindings());
     }
 
-    /** @test */
+    #[Test]
     public function it_doesnt_throw_when_resolving_an_undecodable_route_key()
     {
         $model = Fake::create();
@@ -130,7 +132,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals(['abc'], $query->getBindings());
     }
 
-    /** @test */
+    #[Test]
     public function it_resolves_implicit_bindings()
     {
         $this->createRoute('fake/{fake}', function (Fake $fake) {
@@ -145,7 +147,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
     }
 
-    /** @test */
+    #[Test]
     public function it_resolves_implicit_bindings_with_trashed()
     {
         $this->createRoute('fake/{deletable}', function (Deletable $deletable) {
@@ -161,7 +163,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
     }
 
-    /** @test */
+    #[Test]
     public function it_resolves_explicit_bindings()
     {
         Route::model('fake', Fake::class);
@@ -222,6 +224,7 @@ class FakeIdTest extends TestCase
         // This is the important part.
         Route::model('deletable', Deletable::class, function ($value) {
             $query = Deletable::query()->withTrashed();
+
             return (new Deletable)->resolveRouteBindingQuery($query, $value)->firstOrFail();
         });
 
@@ -238,7 +241,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals("ID:{$model->getKey()}", $response->getContent());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_notfound_on_model_not_found()
     {
         $this->createRoute('fake/{fake}', function (Fake $fake) {
@@ -255,7 +258,7 @@ class FakeIdTest extends TestCase
         $this->assertEquals(ModelNotFoundException::class, get_class($response->exception));
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_notfound_on_undecodable_route_key()
     {
         $this->createRoute('fake/{fake}', function (Fake $fake) {

@@ -16,8 +16,8 @@ return [
     |
     */
 
-    'prime'   => env('FAKEID_PRIME', 961748927),
+    'prime' => env('FAKEID_PRIME', 961748927),
     'inverse' => env('FAKEID_INVERSE', 1430310975),
-    'random'  => env('FAKEID_RANDOM', 620464665),
+    'random' => env('FAKEID_RANDOM', 620464665),
 
 ];

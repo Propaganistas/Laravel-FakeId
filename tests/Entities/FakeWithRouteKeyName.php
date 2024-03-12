@@ -1,4 +1,5 @@
 <?php
+
 namespace Propaganistas\LaravelFakeId\Tests\Entities;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,7 +9,7 @@ class FakeWithRouteKeyName extends Model
 {
     use RoutesWithFakeIds;
 
-    protected $table = "fakes";
+    protected $table = 'fakes';
 
     public function getRouteKeyName()
     {
