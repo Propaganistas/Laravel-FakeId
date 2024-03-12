@@ -48,5 +48,8 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "suggest": {
+        "vinkla/hashids": "Laravel-FakeId is deprecated"
+    }
 }
