@@ -1,4 +1,4 @@
-# 🚨 ABANDONDED
+# 🚨 ABANDONED
 
 Looking for a new maintainer.
 If no maintainer is found by December 2025, this repository will be deleted.
