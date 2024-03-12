@@ -1,3 +1,16 @@
+# 🚨 ABANDONDED
+
+Looking for a new maintainer.
+If no maintainer is found by December 2025, this repository will be deleted.
+
+Use [hashids](https://github.com/vinkla/hashids) instead.
+
+---
+
+---
+
+---
+
 # Laravel FakeID
 
 ![Tests](https://github.com/Propaganistas/Laravel-FakeId/workflows/Tests/badge.svg?branch=master)
@@ -66,11 +79,3 @@ A route to this specific endpoint can now be generated using Laravel's `route()`
 ```php
 <a href="{{ route('articles.show', $article) }}"> {{ $article->name }} </a>
 ```
-
-
-### FAQ
-
-**Why didn't you implement [Hashids](https://github.com/vinkla/hashids) instead of [Optimus](https://github.com/jenssegers/optimus)?**
-
-PERFORMANCE!
-Optimus is based on Knuth's multiplicative hashing method and proves to be quite faster than Hashids. It's even mentioned on Hashids' own [website](http://hashids.org/#alternatives).
